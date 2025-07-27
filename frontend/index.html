@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>r4u</title>
+        <meta name="description" content="reply4u">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" href="favicon.ico">
+        <link rel="stylesheet" href="style/style.css">
+        
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Orbit&display=swap" rel="stylesheet">
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    </head>
+    <body class="bg-black font-orbit text-white h-screen overflow-hidden">
+        <header>
+            <div class="flex justify-center">
+                <span class="font-orbit font-logo">reply4u</span>
+            </div>
+            <hr class="bg-white h-px border-0 mt-1">
+        </header>
+        <main x-data="data()">
+            <div class="content-grid mt-2 h-full h-main">
+                
+                <div x-init="fetchUsers()" class="border border-white border-r-0 w-full h-main p-2">
+                    <div class="flex w-full border border-white rounded">
+                        <input @change="fetchUsers()" x-model="userFilters.q" type="text" id="search_username" class="w-full py-1 px-2 focus:outline-none" placeholder="Search username...">
+                        <button @click="fetchUsers" type="button" class="hover:cursor-pointer p-1">
+                            <svg width="24px" height="24px" viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M15.7955 15.8111L21 21M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="mt-1 ml-1">
+                        <input @change="fetchUsers()" x-model="userFilters.only_active" id="only_active" type="checkbox">
+                        <label for="only_active">Active only</label>
+                        <br>
+                    </div>
+                    <div class="w-full mt-2 h-full max-h-search overflow-y-auto scrollbar-digital">
+                        <template x-for="user in users" :key="user.telegram_id">
+                            <div @click="setSelectedUser(user)" class="list-item-digital p-1">
+                                <div class="avatar flex justify-center items-center h-16 w-16">
+                                    <span x-text="getUserChar(user)" class="font-semibold text-2xl"></span>
+                                </div>
+                                <span x-text="getUserChatTitle(user)" class="font-semibold ml-2"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                
+                <div class="border border-white h-main">
+                    <div class="flex">
+                        <div class="ml-2 w-full mr-2">
+                            <span x-text="getUserChatTitle(selectedUser)" class="text-3xl"></span>
+                            <span x-show="selectedUser.username" x-text="selectedUser.username" class="float-right text-xl"></span>
+                            <div x-show="selectedUser.telegram_id">
+                                <div class="flex mt-2 w-full">
+                                    <div class="flex items-center px-1 py-1">
+                                        <svg width="26px" height="26px" viewBox="0 0 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid">
+                                            <g>
+                                                <path d="M128,0 C57.307,0 0,57.307 0,128 L0,128 C0,198.693 57.307,256 128,256 L128,256 C198.693,256 256,198.693 256,128 L256,128 C256,57.307 198.693,0 128,0 L128,0 Z" fill="#40B3E0"></path>
+                                                <path d="M190.2826,73.6308 L167.4206,188.8978 C167.4206,188.8978 164.2236,196.8918 155.4306,193.0548 L102.6726,152.6068 L83.4886,143.3348 L51.1946,132.4628 C51.1946,132.4628 46.2386,130.7048 45.7586,126.8678 C45.2796,123.0308 51.3546,120.9528 51.3546,120.9528 L179.7306,70.5928 C179.7306,70.5928 190.2826,65.9568 190.2826,73.6308" fill="#FFFFFF"></path>
+                                                <path d="M98.6178,187.6035 C98.6178,187.6035 97.0778,187.4595 95.1588,181.3835 C93.2408,175.3085 83.4888,143.3345 83.4888,143.3345 L161.0258,94.0945 C161.0258,94.0945 165.5028,91.3765 165.3428,94.0945 C165.3428,94.0945 166.1418,94.5735 163.7438,96.8115 C161.3458,99.0505 102.8328,151.6475 102.8328,151.6475" fill="#D2E5F1"></path>
+                                                <path d="M122.9015,168.1154 L102.0335,187.1414 C102.0335,187.1414 100.4025,188.3794 98.6175,187.6034 L102.6135,152.2624" fill="#B5CFE4"></path>
+                                            </g>
+                                        </svg>
+                                        <span x-text="selectedUser.telegram_id" class="text-xl ml-2"></span>
+                                    </div>
+                                    <span class="flex items-center ml-auto">
+                                        <input @change="submitSelectedUser()" x-model="selectedUser.active" type="checkbox" id="isActive">
+                                        <label for="isActive" class="ml-1">Active</label>
+                                    </span>
+                                </div>
+                                <div class="w-full mt-4">
+                                    <textarea @blur="submitSelectedUser()" x-model="selectedUser.description" name="description" placeholder="Description" class="input-digital w-full"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div x-show="selectedUser.chat_history" class="flex mt-3 ml-4">
+                        <span class="text-xl text-white">History</span>
+                        <span class="ml-auto mr-4 mt-1">
+                            <button x-text="deleteHistoryButton.content" @click="deleteSelectedUserHistory()" type="button" 
+                            :class="getDeleteHistoryButtonClass()"></button>
+                        </span>
+                    </div>
+                    <div class="mx-4 mt-3 max-h-chat overflow-y-auto scrollbar-digital">
+                        <template x-for="(message, index) in selectedUser.chat_history" :key="index">
+                            <div class="flex">
+                                <div class="border-t border-t-white py-2 flex items-center w-full">
+                                    <span class="flex font-semibold justify-center w-1/6 truncate">
+                                        <span x-text="message.role" :class="message.role === 'assistant' ? 'text-lime-600' : 'text-sky-600'"></span>
+                                    </span>
+                                    <p x-text="message.content" class="ml-2 w-2/3 overflow-hidden text-ellipsis"></p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                
+                <div class="border border-white border-l-0 h-main">
+                    <div class="flex w-full">
+                        <div class="radio-digital w-1/2 font-semibold border-r-1 border-b-1 border-gray-500">
+                            <label class="flex items-center justify-center w-full h-full not-has-checked:cursor-pointer">
+                                <input id="configMenu" type="radio" name="menuType" class="w-full h-full hidden" checked>
+                                Settings
+                            </label>
+                        </div>
+                        <div class="radio-digital w-1/2 font-semibold border-b-1 border-gray-500">
+                            <label class="flex items-center justify-center w-full h-full not-has-checked:cursor-pointer">
+                                <input type="radio" name="menuType" class="w-full h-full hidden">
+                                Logs
+                            </label>
+                        </div>
+                    </div>
+                    <div x-init="fetchSessionInfo()" class="p-4">
+                        <div class="w-full mt-2 border border-white p-1">
+                            <span class="text-xl ml-1 my-1">Settings</span>
+                            <div class="flex ml-2">
+                                <div class="border border-white flex justify-center items-center h-24 w-24 mt-1">
+                                    <span x-text="getUserChar(currentUser)" class="font-semibold text-2xl"></span>
+                                </div>
+                                <div class="ml-1">
+                                    <span x-text="getUserChatTitle(currentUser)" class="text-white text-3xl ml-1"></span>
+                                    <div class="flex items-center px-1 py-1 mt-3">
+                                        <svg width="26px" height="26px" viewBox="0 0 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid">
+                                            <g>
+                                                <path d="M128,0 C57.307,0 0,57.307 0,128 L0,128 C0,198.693 57.307,256 128,256 L128,256 C198.693,256 256,198.693 256,128 L256,128 C256,57.307 198.693,0 128,0 L128,0 Z" fill="#40B3E0"></path>
+                                                <path d="M190.2826,73.6308 L167.4206,188.8978 C167.4206,188.8978 164.2236,196.8918 155.4306,193.0548 L102.6726,152.6068 L83.4886,143.3348 L51.1946,132.4628 C51.1946,132.4628 46.2386,130.7048 45.7586,126.8678 C45.2796,123.0308 51.3546,120.9528 51.3546,120.9528 L179.7306,70.5928 C179.7306,70.5928 190.2826,65.9568 190.2826,73.6308" fill="#FFFFFF"></path>
+                                                <path d="M98.6178,187.6035 C98.6178,187.6035 97.0778,187.4595 95.1588,181.3835 C93.2408,175.3085 83.4888,143.3345 83.4888,143.3345 L161.0258,94.0945 C161.0258,94.0945 165.5028,91.3765 165.3428,94.0945 C165.3428,94.0945 166.1418,94.5735 163.7438,96.8115 C161.3458,99.0505 102.8328,151.6475 102.8328,151.6475" fill="#D2E5F1"></path>
+                                                <path d="M122.9015,168.1154 L102.0335,187.1414 C102.0335,187.1414 100.4025,188.3794 98.6175,187.6034 L102.6135,152.2624" fill="#B5CFE4"></path>
+                                            </g>
+                                        </svg>
+                                        <span x-text="currentUser.telegram_id" class="text-white text-xl ml-2"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex mt-3 ml-2">
+                                <span class="text-xl">Model:</span>
+                                <span x-text="settings.model" class="text-lg ml-1"></span>
+                            </div>
+                            <div class="mt-2 ml-2">
+                                <div class="relative flex w-1/2 border border-white rounded">
+                                    <input @focus="showModelsList()" @blur="closeModelsList()" @change="fetchAvailableModels()" x-model="modelFilters.q" type="text" id="search_model" class="peer w-full py-1 px-2 focus:outline-none" placeholder="Search models...">
+                                    <button @click="fetchAvailableModels()" type="button" class="hover:cursor-pointer p-1">
+                                        <svg width="24px" height="24px" viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M15.7955 15.8111L21 21M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </button>
+                                    <div x-show="showingModelsList" class="absolute top-8.5 w-full border border-white">
+                                        <ul class="w-full">
+                                            <template x-for="model in available_models">
+                                                <li @click="submitModel(model)" class="w-full list-item-digital p-1 border-b-px border-white">
+                                                    <span x-text="model"></span>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3 mx-2">
+                                <div class="flex items-center">
+                                    <label for="system_message_template" class="text-lg">System message:</label>
+                                    <div class="relative">
+                                        <span class="peer cursor-pointer">
+                                            <svg width="22px" height="22px" viewBox="0 0 24 24" fill="#a4a4a4" class="hover:fill-white transition duration-300" xmlns="http://www.w3.org/2000/svg">
+                                                <g> 
+                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M13.4 6H11V8.4H13.4V6ZM13.4 10.8H11V18H13.4V10.8Z"/> 
+                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M22 2H2V22H22V2ZM20 4H4V20H20V4Z"/> 
+                                                </g>
+                                            </svg>
+                                        </span>
+                                        <div class="not-peer-hover:hidden absolute top-0 left-6.5 p-1 w-108 bg-black border border-white">
+                                            <span>
+                                            <p>This is a system message that is added after every user message in requests to the LLM model. Here you can provide some basic instructions common to all users. Also you can use these variables here:</p>
+                                            <p class="ml-3">{username} - User's username</p>
+                                            <p class="ml-3">{description} - User's description</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <textarea @blur="submitSettings()" x-model="settings.system_message_template" name="system_message_template" placeholder="Default instruction" class="input-digital w-full mt-1 h-24"></textarea>
+                            </div>
+                            <div class="ml-2">
+                                <div>
+                                    <input @change="submitSettings" x-model="settings.users_active_by_default" id="users_active_by_default" type="checkbox" class="px-1 py-1">
+                                    <label for="user_active_by_default" class="text-white text-lg ml-1">
+                                        Users active by default
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <script src="js/requests.js"></script>
+        <script>
+            function data() {
+                return {
+                    users: [],
+                    userFilters: {
+                        limit: 20,
+                        q: '',
+                        only_active: false,
+                    },
+                    selectedUser: {},
+                    currentUser: {},
+                    settings: {
+                        model: 'qwen3:32b',
+                    },
+                    available_models: [],
+                    modelFilters: {
+                        limit: 5,
+                        q: '',
+                    },
+                    showingModelsList: false,
+                    deleteHistoryButton: {
+                        waitingForConfirmation: false,
+                        defaultClass: 'border border-white rounded cursor-pointer px-1 py-1',
+                        dangerClass: 'bg-red-600 rounded cursor-pointer px-1 py-1',
+                        content: 'Clear',
+                    },
+
+                    fetchUsers: function () {
+                        const url = API_USER_LIST + '?' + new URLSearchParams(this.userFilters);
+                        fetch(url).then((response) => {
+                            this.users = response.json();
+                        }).catch((error) => {
+                            console.log(error);
+                        });
+                    },
+
+                    fetchSessionInfo: function (){
+                        this.fetchCurrentUser();
+                        this.fetchSettings();
+                        this.fetchAvailableModels();
+                    },
+
+                    fetchCurrentUser: function () {
+                        fetch(API_MY_ACCOUNT).then((response) => {
+                            response.json().then((currentUser) => {
+                                this.currentUser = currentUser;
+                            });
+                        }).catch((error) => {
+                            console.log(error);
+                        })
+                    },
+
+                    fetchSettings: function() {
+                        fetch(API_SETTINGS).then((response) => {
+                            response.json().then((settings) => {
+                                this.settings = settings;
+                            })
+                        })
+                    },
+
+                    fetchAvailableModels: function() {
+                        const url = API_MODELS_LIST + '?' + new URLSearchParams(this.modelFilters);
+                        fetch(url).then((response) => {
+                            response.json().then((data) => {
+                                this.available_models = data;
+                            })
+                        })
+                    },
+
+                    submitSelectedUser: function () {
+                        const url = getUserDetailURL(this.selectedUser.telegram_id);
+                        const config = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(this.selectedUser),
+                        }
+                        fetch(url, config).catch((error) => {
+                            console.log(error);
+                        })
+                    },
+
+                    submitSettings() {
+                        const config = {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(this.settings),
+                        }
+                        fetch(API_SETTINGS, config).catch((error) => {
+                            console.log(error);
+                        })
+                    },
+
+                    submitModel(model) {
+                        this.settings.model = model;
+                        this.closeModelsList();
+                        this.submitSettings();
+                    },
+                    
+                    showModelsList(){
+                        this.showingModelsList = true;
+                    },
+
+                    closeModelsList(){
+                        setTimeout(() => { this.showingModelsList = false }, 100)
+                    },
+
+                    setSelectedUser(user) {
+                        this.selectedUser = user;
+                        this.deactivateDeleteButton();
+                        if (this.selectedUser.active == undefined) {
+                            this.selectedUser.active = false;
+                        }
+                    },
+
+                    deleteSelectedUserHistory() {
+                        if (!this.deleteHistoryButton.waitingForConfirmation) {
+                            this.activateDeleteButton();
+                            return;
+                        }
+
+                        const url = getDeleteUserHistoryURL(this.selectedUser.telegram_id);
+                        const config = {
+                            method: 'DELETE',
+                        }
+                        fetch(url, config).then(() => {
+                            this.selectedUser.chat_history = null;
+                            this.deactivateDeleteButton();
+                        })
+                    },
+
+                    activateDeleteButton() {
+                        this.deleteHistoryButton.waitingForConfirmation = true;
+                        this.deleteHistoryButton.content = 'Sure?';
+                        this.deactivateDeleteButtonTimer(3);
+                    },
+
+                    deactivateDeleteButtonTimer(seconds){
+                        this.deleteHistoryButton.content = this.deleteHistoryButton.content.split(' ')[0];
+                        this.deleteHistoryButton.content += ` (${seconds})`;
+                        if (seconds <= 0) {
+                            this.deactivateDeleteButton();
+                            return;
+                        }
+                        setTimeout((updatedSeconds) => { this.deactivateDeleteButtonTimer(updatedSeconds) }, 1000,  seconds - 1);
+                    },
+
+                    deactivateDeleteButton() {
+                        this.deleteHistoryButton.waitingForConfirmation = false;
+                        this.deleteHistoryButton.content = 'Clear';
+                    },
+
+                    getUserChatTitle(user) {
+                        if (user.first_name && user.last_name){
+                            return user.first_name + ' ' + user.last_name;
+                        }
+                        if (user.first_name) {
+                            return user.first_name;
+                        }
+                        if (user.last_name) {
+                            return user.last_name;
+                        }
+                        if (user.username) {
+                            return user.username;
+                        }
+
+                        return user.telegram_id;
+                    },
+
+                    getUserChar(user) {
+                        if (!user.telegram_id) {
+                            return '';
+                        }
+                        let userString = '';
+                        if (user.first_name) {
+                            userString = user.first_name;
+                        } else if (user.last_name) {
+                            userString = user.last_name;
+                        } else if (user.username) {
+                            userString = user.username;
+                        } else {
+                            userString = user.telegram_id.toString();
+                        }
+                        let char = userString.charAt(0);
+                        if (char === '-') {  // channel id's starting with '-'
+                            char = userString.charAt(1);
+                        }
+                        return char;
+                    },
+
+                    getDeleteHistoryButtonClass() {
+                        if (this.deleteHistoryButton.waitingForConfirmation) {
+                            return this.deleteHistoryButton.dangerClass;
+                        }
+                        return this.deleteHistoryButton.defaultClass;
+                    }
+                }
+            }
+        </script>
+    </body>
+</html>
