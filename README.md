@@ -1,7 +1,7 @@
 reply4u is an app for managing LLM-based Telegram chatbots that allows you to configure model behavior with any user. It supports both JSON and SQL data storage options, and Ollama or any third-party API compatible with the openai-python as LLM API
 
 # Installation
-For installation and proper working, **Python 3.12.2**, **Node.js 20.11.1**, and **PostgreSQL 16.2** (if using PostgreSQL storage) are required.
+For installation and proper working, **Python 3.12 or higher**, **Node.js 20 or higher**, and **PostgreSQL 16 or higher** (if you are goind to use PostgreSQL storage) are required.
 
 1. Clone GitHub repository: 
    ```bash
@@ -22,7 +22,7 @@ For installation and proper working, **Python 3.12.2**, **Node.js 20.11.1**, and
    venv\scripts\activate
    python -m pip install -r requirements.txt
    ```
-3. If you are going to use PostgreSQL as user store, install PostgreSQL 16.2 and create a database.
+3. If you are going to use PostgreSQL as user store, install PostgreSQL 16 or higher and setup a database.
 4. Create Telegram Application following <a href="https://core.telegram.org/api/obtaining_api_id#obtaining-api-id">**this**</a> guide
 5. Install <a href="https://github.com/ollama/ollama">**Ollama**</a> or use any API, compatible with `openai-python`
 6. Configure environment variables in `.env`:
@@ -54,12 +54,16 @@ For installation and proper working, **Python 3.12.2**, **Node.js 20.11.1**, and
    # Frontend-client hosts for correct CORS working (format: host1,host2,host3)
    FRONTEND_HOSTS=http://localhost:8281,http://127.0.0.1:8281
    ```
-7. Go to frontend directory and install required dependencies:  
+7. If you are going to use PostgreSQL as user storage, go to `backend` directory and apply alembic migrations:
+   ```bash
+   alembic upgrade head 
+   ```
+8. Go to `frontend` directory and install required dependencies:  
    ```bash
    cd ../frontend
    npm install
    ```
-8. Run the application (all terminals should be opened in `reply4u` directory):
+9. Run the application (all terminals should be opened in `reply4u` directory):
    ### Terminal 1: 
    For **Linux/macOS**: 
    ```bash

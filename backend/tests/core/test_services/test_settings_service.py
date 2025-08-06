@@ -30,6 +30,7 @@ async def test_update_settings(settings_service):
         model='qwen3:32b',
         users_active_by_default=True,
         system_message_template='test',
+        message_template='some_content',
     )
     await settings_service.update(payload)
 

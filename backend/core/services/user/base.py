@@ -1,5 +1,6 @@
 from abc import ABC
 
+from core.schemas.message import MessageSchema
 from core.schemas.user import UserSchema, UserInDBSchema, CreateUserSchema, PatchUserSchema
 
 from core.services.settings import SettingsService
@@ -43,7 +44,8 @@ class BaseUserService(ABC):
     @classmethod
     async def get_context(cls, user: UserSchema) -> list[dict]:
         system_message = await cls.format_system_message(user)
-        return user.chat_history + [system_message]
+        formatted_chat_history = [await cls.format_history_message(message) for message in user.chat_history]
+        return formatted_chat_history + [system_message]
 
     @classmethod
     async def format_system_message(cls, user: UserSchema) -> dict:
@@ -54,6 +56,17 @@ class BaseUserService(ABC):
             'role': 'system',
             'content': content
         }
+
+    @classmethod
+    async def format_history_message(cls, message: MessageSchema) -> dict:
+        settings = await SettingsService.get_settings()
+        template = settings.message_template
+        content = template.format(**message.shortcuts)
+        return {
+            'role': message.role,
+            'content': content or message.content
+        }
+
 
     @classmethod
     async def clear_user_chat_history(cls, telegram_id: int):

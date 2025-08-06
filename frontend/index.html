@@ -87,7 +87,7 @@
                             :class="getDeleteHistoryButtonClass()"></button>
                         </span>
                     </div>
-                    <div class="mx-4 mt-3 max-h-chat overflow-y-auto scrollbar-digital">
+                    <div class="mx-4 mt-3 max-h-chat h-full overflow-y-auto scrollbar-digital">
                         <template x-for="(message, index) in selectedUser.chat_history" :key="index">
                             <div class="flex">
                                 <div class="border-t border-t-white py-2 flex items-center w-full">
@@ -95,6 +95,10 @@
                                         <span x-text="message.role" :class="message.role === 'assistant' ? 'text-lime-600' : 'text-sky-600'"></span>
                                     </span>
                                     <p x-text="message.content" class="ml-2 w-2/3 overflow-hidden text-ellipsis"></p>
+                                    <div x-show="message.date" class="ml-auto">
+                                        <p x-text="parseDate(message.date)" class="text-xs text-gray-600"></p>
+                                        <p x-text="parseTime(message.date)" class="text-xs text-gray-600"></p>
+                                    </div>
                                 </div>
                             </div>
                         </template>
@@ -112,7 +116,7 @@
                         <div class="radio-digital w-1/2 font-semibold border-b-1 border-gray-500">
                             <label class="flex items-center justify-center w-full h-full not-has-checked:cursor-pointer">
                                 <input type="radio" name="menuType" class="w-full h-full hidden">
-                                Logs
+                                <s>Logs</s>
                             </label>
                         </div>
                     </div>
@@ -150,7 +154,7 @@
                                             <path d="M15.7955 15.8111L21 21M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
                                     </button>
-                                    <div x-show="showingModelsList" class="absolute top-8.5 w-full border border-white">
+                                    <div x-show="showingModelsList" class="absolute z-3 top-8.5 w-full border border-white">
                                         <ul class="w-full">
                                             <template x-for="model in available_models">
                                                 <li @click="submitModel(model)" class="w-full list-item-digital p-1 border-b-px border-white">
@@ -173,8 +177,7 @@
                                                 </g>
                                             </svg>
                                         </span>
-                                        <div class="not-peer-hover:hidden absolute top-0 left-6.5 p-1 w-108 bg-black border border-white">
-                                            <span>
+                                        <div class="not-peer-hover:hidden absolute z-2 top-0 right-6.5 p-1 w-128 bg-black border border-white">
                                             <p>This is a system message that is added after every user message in requests to the LLM model. Here you can provide some basic instructions common to all users. Also you can use these variables here:</p>
                                             <p class="ml-3">{username} - User's username</p>
                                             <p class="ml-3">{description} - User's description</p>
@@ -182,6 +185,29 @@
                                     </div>
                                 </div>
                                 <textarea @blur="submitSettings()" x-model="settings.system_message_template" name="system_message_template" placeholder="Default instruction" class="input-digital w-full mt-1 h-24"></textarea>
+                                <div class="mt-1">
+                                    <div class="flex items-center">
+                                        <label for="message_template" class="text-lg">User message:</label>
+                                        <div class="relative">
+                                            <span class="peer cursor-pointer">
+                                                <svg width="22px" height="22px" viewBox="0 0 24 24" fill="#a4a4a4" class="hover:fill-white transition duration-300" xmlns="http://www.w3.org/2000/svg">
+                                                    <g> 
+                                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M13.4 6H11V8.4H13.4V6ZM13.4 10.8H11V18H13.4V10.8Z"/> 
+                                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M22 2H2V22H22V2ZM20 4H4V20H20V4Z"/> 
+                                                    </g>
+                                                </svg>
+                                            </span>
+                                            <div class="not-peer-hover:hidden absolute z-2 top-0 right-6.5 p-1 w-128 bg-black border border-white">
+                                                <p>This is a user message template. Messages receiven from telegram user will be formatted according to this template. You can use these variables here:</p>
+                                                <p class="ml-3">{date} - Message date in format YYYY-MM-dd</p>
+                                                <p class="ml-3">{time} - Message time in format hh:mm:ss.xxxxxx</p>
+                                                <p class="ml-3">{content} or {message} - User's message content</p>
+                                                <p>If you leave this field empty, plain message content will be used.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <textarea @blur="submitSettings()" x-model="settings.message_template" name="message_template" placeholder="Message template" id="message_template" class="input-digital w-full mt-1 h-24"></textarea>
+                                </div>
                             </div>
                             <div class="ml-2">
                                 <div>
@@ -395,6 +421,20 @@
                             return this.deleteHistoryButton.dangerClass;
                         }
                         return this.deleteHistoryButton.defaultClass;
+                    },
+
+                    parseDate(datetime_string){
+                        const datetime = new Date(datetime_string);
+                        return datetime.toLocaleDateString('en-GB', {
+
+                        });
+                    },
+
+                    parseTime(datetime_string){
+                        const datetime = new Date(datetime_string);
+                        return datetime.toLocaleTimeString('en-GB', {
+                            hourCycle: 'h24',
+                        });
                     }
                 }
             }

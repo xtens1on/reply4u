@@ -1,5 +1,8 @@
+from datetime import datetime
+
 import pytest
 
+from core.schemas.message import MessageSchema
 from core.schemas.user import CreateUserSchema
 from core.services.llm.llm import LLMService
 from core.services.llm.api.base import LLMApi
@@ -38,7 +41,18 @@ async def test_generate_response(user_service, llm_service):
     telegram_id = 15
     payload = CreateUserSchema(telegram_id=telegram_id, active=True)
     user = await user_service.create_user(payload)
-    messages = ['hello', 'world']
+    messages = [
+        MessageSchema(
+            content='hello',
+            role='user',
+            date=datetime.now(),
+        ),
+        MessageSchema(
+            content='world',
+            role='user',
+            date=datetime.now(),
+        ),
+    ]
 
     response = await llm_service.generate_response(user, messages)
     assert response == MOCK_RESPONSE_CONTENT

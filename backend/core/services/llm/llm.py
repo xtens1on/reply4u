@@ -1,11 +1,14 @@
+from datetime import datetime
+
 from core.schemas.user import UserSchema
+from core.schemas.message import MessageSchema
 
 from core.services.settings import SettingsService
 from core.services.user import UserService
+from core.services.llm.api.base import LLMApi as BaseLLMApi
 
 from core.config import LLM_PROVIDER
 
-from core.services.llm.api.base import LLMApi as BaseLLMApi
 
 if LLM_PROVIDER == 'ollama':
     from core.services.llm.api import OllamaAPI as LLMApi
@@ -22,12 +25,18 @@ class LLMService:
         cls.llm_api = api_class
 
     @classmethod
-    async def generate_response(cls, user: UserSchema, messages: list[str]) -> str:
-        user.update_context(messages, 'user')
+    async def generate_response(cls, user: UserSchema, messages: list[MessageSchema]) -> str:
+        user.update_context(messages)
         context = await cls.user_service.get_context(user)
         settings = await SettingsService.get_settings()
         response = await cls.llm_api.get_completion(model=settings.model, messages=context)
-        user.update_context([response], role='assistant')
+        user.update_context([
+            MessageSchema(
+                content=response,
+                role='assistant',
+                date=datetime.now(),
+            ),
+        ])
         await cls.user_service.save(user)
         return response
 

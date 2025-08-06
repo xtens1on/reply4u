@@ -4,7 +4,9 @@ from pyrogram import Client
 from pyrogram.types import Message
 from pyrogram.enums import ChatAction
 
+from core.schemas.message import MessageSchema
 from core.schemas.user import UserSchema
+
 from core.services.user import UserService
 from core.services.llm import LLMService
 
@@ -12,14 +14,15 @@ from core.config import RESPONSE_DELAY
 
 
 class OnMessage:
+    TELEGRAM_MAX_MESSAGE_LENGTH = 4096
     queue: dict[int, list[Message]] = {}
 
     @classmethod
     async def on_message(cls, client: Client, message: Message):
         telegram_id = message.from_user.id
-        me = await client.get_me()
-        if telegram_id == me.id:
-            return
+        #me = await client.get_me()
+        #if telegram_id == me.id:
+        #    return
         user = await UserService.get_or_create_user(telegram_id=telegram_id)
         if not user.active:
             return
@@ -42,9 +45,17 @@ class OnMessage:
         if last_message.id != message.id:
             return
 
-        text_messages = [message.text for message in cls.queue[user.telegram_id]]
+        messages = [
+            MessageSchema(
+                content=message.text,
+                date=message.date,
+                role='user',
+            ) for message in cls.queue[user.telegram_id]
+        ]
         del cls.queue[user.telegram_id]
         await client.send_chat_action(message.chat.id, ChatAction.TYPING)
-        response = await LLMService.generate_response(user, text_messages)
+        response = await LLMService.generate_response(user, messages)
         await client.send_chat_action(message.chat.id, ChatAction.CANCEL)
+        if len(response) > cls.TELEGRAM_MAX_MESSAGE_LENGTH:
+            response = response[:cls.TELEGRAM_MAX_MESSAGE_LENGTH]
         await message.reply_text(response)

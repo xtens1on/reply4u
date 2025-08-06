@@ -10,8 +10,8 @@ backend/core/users.json
 backend/core/settings.json
 
 # Pyrogram session files
-.session
-.session-journal
+*.session
+*.session-journal
 
 # Distribution / packaging
 .Python

@@ -57,6 +57,8 @@ class UserServiceJSON(BaseUserService):
 
     @classmethod
     async def _serialize(cls, user: dict) -> UserSchema:
+        if not user['chat_history']:
+            user['chat_history'] = None
         return UserSchema(
             telegram_id=user['telegram_id'],
             description=user['description'],

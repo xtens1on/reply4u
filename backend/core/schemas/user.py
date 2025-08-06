@@ -5,34 +5,40 @@ from pyrogram.types import User as TelegramUser, Chat
 
 from pydantic import BaseModel, Json
 
+from .message import MessageSchema
+
 
 class UserInDBSchema(BaseModel):
     telegram_id: int
     active: bool
     description: str | None = None
-    chat_history: Json[List] | None = None
+    chat_history: Json[List[MessageSchema]] | None = None
 
     def update(self, **data):
         for key, value in data.items():
             setattr(self, key, value)
         return self
 
-    def update_context(self, messages: list[str], role: str = 'user'):
-        message_objects = [{
-            'content': message,
-            'role': role,
-        } for message in messages]
+    def update_context(self, messages: list[MessageSchema]):
         if not self.chat_history:
-            self.chat_history = message_objects
+            self.chat_history = messages
             return
-        self.chat_history += message_objects
+        self.chat_history += messages
 
     def db_dump(self, exclude_none: bool = False, exclude: set[str] = None):
         data = self.model_dump(exclude_none=exclude_none, exclude=exclude)
-        if data.get('chat_history'):
-            data['chat_history'] = json.dumps(data['chat_history'])
+        if self.chat_history:
+            data['chat_history'] = json.dumps(self.chat_history_json)
         return data
 
+    @property
+    def chat_history_json(self):
+        messages = []
+        for message in self.chat_history:
+            data = message.model_dump(exclude={'date'})
+            data['date'] = message.date.timestamp()
+            messages.append(data)
+        return messages
 
 class CreateUserSchema(BaseModel):
     telegram_id: int

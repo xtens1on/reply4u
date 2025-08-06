@@ -1,5 +1,8 @@
+from datetime import datetime, timezone
+
 import pytest
 
+from core.schemas.message import MessageSchema
 from core.schemas.user import CreateUserSchema, PatchUserSchema
 
 from core.services.settings import SettingsService
@@ -129,7 +132,11 @@ async def test_update_or_create_user_create_user(user_service):
 @pytest.mark.anyio
 async def test_get_user_chat_history(user_service):
     telegram_id = 1
-    message = {'role': 'user', 'content': 'hello'}
+    message = MessageSchema(
+        content='hello',
+        role='user',
+        date=datetime.now(tz=timezone.utc),
+    )
     chat_history_payload = [message]
 
     user = await user_service.get_user(telegram_id=telegram_id)
@@ -138,7 +145,7 @@ async def test_get_user_chat_history(user_service):
 
     settings = await SettingsService.get_settings()
     chat_history_response = [
-        message,
+        await user_service.format_history_message(message),
         {
             'role': 'system',
             'content': settings.system_message_template.format(**user.shortcuts),
@@ -146,14 +153,13 @@ async def test_get_user_chat_history(user_service):
     ]
     user = await user_service.get_user(telegram_id)
 
-    chat_history = await user_service.get_context(user)
-    assert chat_history == chat_history_response
+    assert await user_service.get_context(user) == chat_history_response
 
 
 @pytest.mark.anyio
 async def test_clear_chat_history(user_service):
     telegram_id = 4
-    chat_history = [{'message': 'hello', 'role': 'user'}]
+    chat_history = [MessageSchema(content='hello', date=datetime.now(), role='user')]
     payload = CreateUserSchema(telegram_id=telegram_id)
     user = await user_service.create_user(payload)
     user.chat_history = chat_history
